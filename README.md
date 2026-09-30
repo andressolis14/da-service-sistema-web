@@ -7,7 +7,6 @@ Implementación de un sistema web para la gestión de desprendibles de nómina, 
 - **Universidad:** Institución Universitaria Antonio José Camacho
 - **Programa:** Ingeniería de Sistemas
 - **Integrantes:** Edwin Andrés Solís Borja, Juan Camilo Ocampo Loboa
-- **Docente:** Javier Pérez Campo
 - **Empresa:** D.A SERVICE S.A.S. (Yumbo, Valle del Cauca)
 - **Metodología:** Scrum + ciclo de vida incremental
 
