@@ -12,6 +12,7 @@
 
 require_once __DIR__ . '/../../vendor/autoload.php';
 require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/../auth/roles.php';
 require_once __DIR__ . '/../auth/autenticacion.php';
 
 // URL base de la aplicación (ver Alias /daservice en httpd.conf -> /public).
@@ -83,17 +84,20 @@ function esDueno(int $empleadoIdDelRegistro): bool
 }
 
 /**
- * Exige que haya sesión activa y, si se indica, que el rol esté en la lista permitida.
- * Se llama al inicio de cada página protegida: el rol se verifica siempre en el
- * servidor, nunca solo ocultando botones en la vista (regla de CLAUDE.md).
+ * Exige que haya sesión activa y, si se indica, que el rol esté en la lista
+ * permitida. Se llama al inicio de cada página protegida: el rol se verifica
+ * siempre en el servidor (comparando por id, nunca por el nombre del rol
+ * escrito a mano), nunca solo ocultando botones en la vista (regla de
+ * CLAUDE.md). Los ids permitidos se pasan como las constantes ROL_* de
+ * src/auth/roles.php.
  */
-function exigirSesion(array $rolesPermitidos = []): void
+function exigirSesion(array $rolesIdPermitidos = []): void
 {
     if (!estaAutenticado()) {
         header('Location: ' . URL_BASE . '/login.php');
         exit;
     }
-    if ($rolesPermitidos && !in_array($_SESSION['rol_nombre'], $rolesPermitidos, true)) {
+    if ($rolesIdPermitidos && !in_array((int) $_SESSION['rol_id'], $rolesIdPermitidos, true)) {
         http_response_code(403);
         echo 'Acceso denegado: tu rol no tiene permiso para ver esta página.';
         exit;
