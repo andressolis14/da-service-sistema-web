@@ -12,40 +12,42 @@ $usuario = usuarioActual();
 
 // Módulos por rol (etiqueta, ícono, historia). 'ruta' queda null hasta que
 // la historia correspondiente esté construida.
+// Se indexa por el id del rol (constantes ROL_*), nunca por el nombre
+// escrito a mano (eso fue lo que causó el defecto de "técnico" en RNF-01).
 $modulosPorRol = [
-    'empleado'      => [
+    ROL_EMPLEADO      => [
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', null],
         ['Mis certificados',         'fa-file-signature',      'HU-03', null],
         ['Solicitar un permiso',     'fa-calendar-check',      'HU-04', null],
         ['Mis vacaciones',           'fa-umbrella-beach',      'HU-05', null],
     ],
-    'jefe'          => [
+    ROL_JEFE          => [
         ['Permisos de mi equipo',    'fa-user-check',          'HU-04', null],
     ],
-    'contabilidad'  => [
+    ROL_CONTABILIDAD  => [
         ['Empleados',                'fa-id-card',              'HU-01', null],
         ['Cargar desprendible',      'fa-file-upload',          'HU-02', null],
     ],
-    'técnico'       => [
+    ROL_TECNICO       => [
         ['Mis tickets asignados',    'fa-screwdriver-wrench',   'HU-08', null],
     ],
-    'coordinador'   => [
+    ROL_COORDINADOR   => [
         ['Todos los tickets',        'fa-headset',              'HU-06 · HU-07 · HU-08', null],
     ],
-    'vendedor'      => [
+    ROL_VENDEDOR      => [
         ['Clientes',                 'fa-building',             'HU-10', null],
         ['Oportunidades',            'fa-handshake',            'HU-11 · HU-15', null],
         ['Proyectos',                'fa-diagram-project',      'HU-16', null],
     ],
-    'gerente'       => [
+    ROL_GERENTE       => [
         ['Indicadores comerciales',  'fa-chart-line',           'HU-13', null],
         ['Reportes',                 'fa-file-excel',           'HU-14', null],
     ],
-    'administrador' => [
+    ROL_ADMINISTRADOR => [
         ['Empleados y cuentas',      'fa-users-gear',           'HU-01 · RNF-02', null],
     ],
 ];
-$modulos = $modulosPorRol[$usuario['rol_nombre']] ?? [];
+$modulos = $modulosPorRol[(int) $usuario['rol_id']] ?? [];
 ?>
 <!doctype html>
 <html lang="es">
