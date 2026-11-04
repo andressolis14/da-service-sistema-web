@@ -1,0 +1,19 @@
+# Dependencias (se instalan con composer install)
+/vendor/
+
+# Archivos reales subidos en desarrollo local (desprendibles, certificados)
+/storage/desprendibles/*
+/storage/certificados/*
+!/storage/desprendibles/.gitkeep
+!/storage/certificados/.gitkeep
+
+# Configuración local con credenciales (nunca credenciales reales en el repo)
+/src/config/local.php
+
+# Sistema
+.DS_Store
+Thumbs.db
+*.log
+
+# Kit de la otra IA (referencia, no es código de la app)
+/kit_implementacion/
