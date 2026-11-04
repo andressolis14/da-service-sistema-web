@@ -92,3 +92,52 @@ tr:last-child td { border-bottom: 0; }
   .app { grid-template-columns: minmax(0, 1fr); }
   nav.app-nav { flex-direction: row; flex-wrap: wrap; }
 }
+
+/* ---------- Pantalla de acceso (login) y bienvenida ----------
+ * Mismo tratamiento visual que el sistema anterior (tarjeta blanca
+ * centrada, fondo oscuro degradado, logo, sombra marcada), adaptado
+ * a la paleta roja/blanca del prototipo. */
+body.pantalla-acceso {
+  display: flex; justify-content: center; align-items: center; min-height: 100vh;
+  background: linear-gradient(135deg, var(--dark) 0%, #5c1316 100%);
+  padding: 20px;
+}
+.tarjeta-acceso {
+  background: var(--surface); padding: 2.75rem 2.25rem; border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .35); width: 100%; max-width: 420px;
+}
+.tarjeta-acceso.ancha { max-width: 760px; }
+.logo-acceso {
+  width: 72px; height: 72px; background: linear-gradient(135deg, var(--accent), var(--dark));
+  border-radius: 15px; display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 1.6rem; margin: 0 auto 1.5rem;
+}
+.titulo-acceso { text-align: center; color: var(--fg); margin: 0 0 .4rem; font-size: 1.5rem; font-weight: 600; }
+.subtitulo-acceso { text-align: center; color: var(--muted); margin: 0 0 1.75rem; font-size: .9rem; }
+.campo-acceso { margin-bottom: 1.25rem; }
+.campo-acceso label { display: block; margin-bottom: .4rem; font-weight: 500; color: var(--fg); font-size: 13px; }
+.campo-acceso input {
+  width: 100%; padding: 11px 13px; border: 2px solid var(--line); border-radius: 10px; font-size: .95rem;
+}
+.campo-acceso input:focus { outline: none; border-color: var(--accent); }
+.grupo-clave { position: relative; }
+.alternar-clave {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none;
+  cursor: pointer; color: var(--muted); font-size: 1rem;
+}
+.boton-acceso {
+  width: 100%; padding: 13px; background: linear-gradient(135deg, var(--accent), var(--dark)); color: #fff;
+  border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform .2s;
+}
+.boton-acceso:hover { transform: translateY(-2px); }
+.pie-acceso { text-align: center; margin-top: 1.75rem; color: var(--muted); font-size: .8rem; }
+
+.rejilla-modulos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin: 1.5rem 0; }
+.tarjeta-modulo {
+  background: var(--accent-soft); padding: 26px; border-radius: 15px; text-align: center;
+  text-decoration: none; color: var(--fg); transition: all .2s; border: 2px solid transparent; display: block;
+}
+.tarjeta-modulo:hover { transform: translateY(-6px); box-shadow: 0 15px 30px rgba(0, 0, 0, .12); border-color: var(--accent); }
+.tarjeta-modulo .icono { font-size: 1.8rem; color: var(--accent); margin-bottom: 10px; }
+.tarjeta-modulo .titulo { font-weight: 600; margin-bottom: 4px; }
+.tarjeta-modulo .descripcion { font-size: 12px; color: var(--muted); }
