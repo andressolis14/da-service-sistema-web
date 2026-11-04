@@ -1,0 +1,16 @@
+{
+    "name": "daservice/sistema-web",
+    "description": "Sistema web D.A SERVICE S.A.S.",
+    "type": "project",
+    "require": {
+        "php": ">=8.0",
+        "dompdf/dompdf": "^3.1",
+        "phpoffice/phpspreadsheet": "^2.1"
+    },
+    "authors": [
+        {
+            "name": "andressolis14",
+            "email": "solisborjaedwinandres@gmail.com"
+        }
+    ]
+}
