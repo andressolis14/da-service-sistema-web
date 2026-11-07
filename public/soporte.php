@@ -45,7 +45,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <strong>Solicitud recibida.</strong> Tu número de ticket es <strong>#<?= $ticketCreado ?></strong>.
         Guárdalo junto con el correo que diste: lo vas a necesitar para consultar el estado más adelante.
       </div>
-      <p style="text-align:center;margin-top:1rem"><a href="<?= URL_BASE ?>/soporte.php">Reportar otra solicitud</a></p>
+      <p style="text-align:center;margin-top:1rem">
+        <a href="<?= URL_BASE ?>/consultar_ticket.php">Consultar el estado de una solicitud</a> ·
+        <a href="<?= URL_BASE ?>/soporte.php">Reportar otra solicitud</a>
+      </p>
     <?php else: ?>
       <?php if ($error): ?>
         <div class="msg err" style="margin-bottom:1.25rem"><?= htmlspecialchars($error) ?></div>
@@ -107,7 +110,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </form>
     <?php endif; ?>
 
-    <div class="pie-acceso"><a href="<?= URL_BASE ?>/login.php">¿Eres parte del equipo? Inicia sesión</a></div>
+    <div class="pie-acceso">
+      <a href="<?= URL_BASE ?>/consultar_ticket.php">¿Ya reportaste algo? Consulta el estado</a> ·
+      <a href="<?= URL_BASE ?>/login.php">¿Eres parte del equipo? Inicia sesión</a>
+    </div>
   </div>
 </body>
 </html>
