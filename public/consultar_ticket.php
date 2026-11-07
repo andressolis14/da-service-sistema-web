@@ -81,6 +81,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <?php $fechaCierre = obtenerFechaCierre((int) $ticket['id']); ?>
           <?php if ($fechaCierre): ?><br>Cerrado el <?= htmlspecialchars($fechaCierre) ?><?php endif; ?>
         </div>
+        <?php if ($ticket['estado'] === 'cerrado' && !obtenerCalificacion((int) $ticket['id'])): ?>
+          <p style="text-align:center;margin-top:1rem">
+            <a href="<?= URL_BASE ?>/calificar_ticket.php">Calificar este servicio</a>
+          </p>
+        <?php endif; ?>
       <?php else: ?>
         <div class="msg err" style="margin-top:1rem">No se encontró ninguna solicitud con ese número y ese correo.</div>
       <?php endif; ?>
