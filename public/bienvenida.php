@@ -17,27 +17,31 @@ $usuario = usuarioActual();
 $modulosPorRol = [
     ROL_EMPLEADO      => [
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
-        ['Mis certificados',         'fa-file-signature',      'HU-03', null],
+        ['Mis certificados',         'fa-file-signature',      'HU-03', '/certificados.php'],
         ['Solicitar un permiso',     'fa-calendar-check',      'HU-04', '/permisos.php'],
         ['Mis vacaciones',           'fa-umbrella-beach',      'HU-05', null],
     ],
     ROL_JEFE          => [
         ['Permisos de mi equipo',    'fa-user-check',          'HU-04', '/permisos.php'],
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
+        ['Mis certificados',         'fa-file-signature',      'HU-03', '/certificados.php'],
     ],
     ROL_CONTABILIDAD  => [
         ['Empleados',                'fa-id-card',              'HU-01', null],
         ['Cargar desprendible',      'fa-file-upload',          'HU-02', '/desprendibles.php'],
+        ['Certificados laborales',   'fa-file-signature',       'HU-03', '/certificados.php'],
         ['Mis permisos',             'fa-calendar-check',       'HU-04', '/permisos.php'],
     ],
     ROL_TECNICO       => [
         ['Mis tickets asignados',    'fa-screwdriver-wrench',   'HU-07 · HU-08', '/tickets.php'],
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
+        ['Mis certificados',         'fa-file-signature',      'HU-03', '/certificados.php'],
         ['Mis permisos',             'fa-calendar-check',       'HU-04', '/permisos.php'],
     ],
     ROL_COORDINADOR   => [
         ['Todos los tickets',        'fa-headset',              'HU-06 · HU-07 · HU-08', '/tickets.php'],
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
+        ['Mis certificados',         'fa-file-signature',      'HU-03', '/certificados.php'],
         ['Mis permisos',             'fa-calendar-check',       'HU-04', '/permisos.php'],
     ],
     ROL_VENDEDOR      => [
@@ -45,6 +49,7 @@ $modulosPorRol = [
         ['Oportunidades',            'fa-handshake',            'HU-11 · HU-15', null],
         ['Proyectos',                'fa-diagram-project',      'HU-16', null],
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
+        ['Mis certificados',         'fa-file-signature',      'HU-03', '/certificados.php'],
         ['Mis permisos',             'fa-calendar-check',       'HU-04', '/permisos.php'],
     ],
     ROL_GERENTE       => [
@@ -52,6 +57,7 @@ $modulosPorRol = [
         ['Indicadores comerciales',  'fa-chart-line',           'HU-13', null],
         ['Reportes',                 'fa-file-excel',           'HU-14', null],
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
+        ['Mis certificados',         'fa-file-signature',      'HU-03', '/certificados.php'],
         ['Mis permisos',             'fa-calendar-check',       'HU-04', '/permisos.php'],
     ],
     ROL_ADMINISTRADOR => [
@@ -59,6 +65,7 @@ $modulosPorRol = [
         ['Clientes',                 'fa-building',             'HU-10', '/clientes.php'],
         ['Todos los tickets',        'fa-headset',              'HU-06 · HU-07 · HU-08', '/tickets.php'],
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
+        ['Certificados laborales',   'fa-file-signature',       'HU-03', '/certificados.php'],
         ['Mis permisos',             'fa-calendar-check',       'HU-04', '/permisos.php'],
     ],
 ];
