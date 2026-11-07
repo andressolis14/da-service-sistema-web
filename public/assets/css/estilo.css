@@ -72,7 +72,7 @@ tr:last-child td { border-bottom: 0; }
 .p-en_proceso, .p-propuesta, .p-negociacion { background: var(--info-soft); color: var(--info); }
 .p-cerrado, .p-aprobado, .p-ganado, .p-aprobada, .p-terminado, .p-activo { background: var(--ok-soft); color: var(--ok); }
 .p-rechazado, .p-perdido, .p-atrasado, .p-inactivo { background: var(--bad-soft); color: var(--bad); }
-.p-calificado, .p-prospecto { background: var(--accent-soft); color: var(--accent); }
+.p-calificado, .p-prospecto, .p-asignado { background: var(--accent-soft); color: var(--accent); }
 
 .msg { border-radius: 6px; padding: 9px 12px; font-size: 13px; }
 .msg.ok { background: var(--ok-soft); color: var(--ok); }
