@@ -35,16 +35,18 @@ $modulosPorRol = [
         ['Todos los tickets',        'fa-headset',              'HU-06 · HU-07 · HU-08', null],
     ],
     ROL_VENDEDOR      => [
-        ['Clientes',                 'fa-building',             'HU-10', null],
+        ['Clientes',                 'fa-building',             'HU-10', '/clientes.php'],
         ['Oportunidades',            'fa-handshake',            'HU-11 · HU-15', null],
         ['Proyectos',                'fa-diagram-project',      'HU-16', null],
     ],
     ROL_GERENTE       => [
+        ['Clientes',                 'fa-building',             'HU-10', '/clientes.php'],
         ['Indicadores comerciales',  'fa-chart-line',           'HU-13', null],
         ['Reportes',                 'fa-file-excel',           'HU-14', null],
     ],
     ROL_ADMINISTRADOR => [
         ['Empleados y cuentas',      'fa-users-gear',           'HU-01 · RNF-02', null],
+        ['Clientes',                 'fa-building',             'HU-10', '/clientes.php'],
     ],
 ];
 $modulos = $modulosPorRol[(int) $usuario['rol_id']] ?? [];
