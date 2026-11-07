@@ -15,6 +15,10 @@
  *    cambie el id en la URL.
  *  - Al cargar el 7.º desprendible de un empleado, se borra el registro y
  *    el PDF más antiguo (dentro de una transacción de BD).
+ *  - Al reemplazar un periodo, el contenido físico del PDF anterior
+ *    realmente desaparece (queda solo el del archivo nuevo).
+ *  - Los PDF de storage/ no se pueden descargar por URL directa, ni por
+ *    la ruta cruda de htdocs ni listando el directorio.
  *  - Un POST sin token CSRF es rechazado.
  *
  * Usa los empleados de datos de prueba id=10 (Laura Gómez, ya tiene sus 6
@@ -29,11 +33,15 @@
 require_once __DIR__ . '/../src/config/app.php';
 
 const BASE = 'http://localhost/daservice';
+// Ruta cruda bajo htdocs, sin pasar por el Alias /daservice -> public/: es
+// el riesgo real, porque XAMPP sirve todo htdocs/ por defecto.
+const BASE_HTDOCS_CRUDO = 'http://localhost/DA_SERVICE_v2';
 const EMPLEADO_LAURA  = 10; // ya tiene 6 (el máximo)
 const EMPLEADO_ANDREA = 12; // tiene 2
 
-const PDF_VALIDO   = __DIR__ . '/fixtures/desprendible_valido.pdf';
-const PDF_INVALIDO = __DIR__ . '/fixtures/no_es_pdf.pdf';
+const PDF_VALIDO    = __DIR__ . '/fixtures/desprendible_valido.pdf';
+const PDF_VALIDO_V2 = __DIR__ . '/fixtures/desprendible_valido_v2.pdf';
+const PDF_INVALIDO  = __DIR__ . '/fixtures/no_es_pdf.pdf';
 
 $fallas = 0;
 
@@ -269,6 +277,85 @@ verificar(str_starts_with($cuerpoDescarga, '%PDF-'), 'El contenido descargado es
 $desprendibleDeLaura = listarDesprendiblesDeEmpleado(EMPLEADO_LAURA)[0];
 [$statusAjeno] = peticion('GET', BASE . '/desprendible_descargar.php?id=' . $desprendibleDeLaura['id'], [], $cookieAndrea);
 verificar($statusAjeno === 403, 'Andrea NO puede descargar un desprendible de Laura cambiando el id en la URL (403)');
+
+// ---------------------------------------------------------------------
+// 11. El reemplazo de un periodo borra de verdad el contenido anterior:
+//     se sube un PDF, se reemplaza por otro con contenido distinto, y el
+//     archivo que queda en disco debe ser exactamente el nuevo (mismo
+//     nombre generado por empleado+periodo: no puede quedar un archivo
+//     "viejo" aparte, porque el reemplazo siempre escribe en la misma
+//     ruta determinista).
+// ---------------------------------------------------------------------
+const PERIODO_REEMPLAZO_FISICO = '2025-06';
+$rutaFisicaReemplazo = __DIR__ . '/../storage/desprendibles/' . EMPLEADO_ANDREA . '/' . PERIODO_REEMPLAZO_FISICO . '.pdf';
+
+$token = tokenDesprendibles($cookieContabilidad, '?empleado=' . EMPLEADO_ANDREA);
+peticionConArchivo(BASE . '/desprendibles.php', [
+    'csrf_token'  => $token,
+    'accion'      => 'cargar',
+    'empleado_id' => EMPLEADO_ANDREA,
+    'periodo'     => PERIODO_REEMPLAZO_FISICO,
+], PDF_VALIDO, $cookieContabilidad);
+clearstatcache(true, $rutaFisicaReemplazo);
+verificar(
+    is_file($rutaFisicaReemplazo) && hash_file('sha256', $rutaFisicaReemplazo) === hash_file('sha256', PDF_VALIDO),
+    'Primera carga de ' . PERIODO_REEMPLAZO_FISICO . ': el archivo en disco coincide con el PDF subido (versión 1)'
+);
+
+$token = tokenDesprendibles($cookieContabilidad, '?empleado=' . EMPLEADO_ANDREA);
+peticionConArchivo(BASE . '/desprendibles.php', [
+    'csrf_token'  => $token,
+    'accion'      => 'cargar',
+    'empleado_id' => EMPLEADO_ANDREA,
+    'periodo'     => PERIODO_REEMPLAZO_FISICO,
+], PDF_VALIDO_V2, $cookieContabilidad);
+clearstatcache(true, $rutaFisicaReemplazo);
+verificar(
+    hash_file('sha256', $rutaFisicaReemplazo) === hash_file('sha256', PDF_VALIDO_V2),
+    'Tras reemplazar, el archivo en disco es el nuevo (versión 2), no el anterior'
+);
+verificar(
+    hash_file('sha256', $rutaFisicaReemplazo) !== hash_file('sha256', PDF_VALIDO),
+    'El contenido del PDF anterior (versión 1) ya no está en esa ruta'
+);
+
+$carpetaAndrea = scandir(__DIR__ . '/../storage/desprendibles/' . EMPLEADO_ANDREA);
+$archivosDelPeriodo = array_filter($carpetaAndrea, fn($f) => str_starts_with($f, PERIODO_REEMPLAZO_FISICO));
+verificar(
+    count($archivosDelPeriodo) === 1,
+    'En storage/ queda un único archivo para ese periodo (no un "viejo" y un "nuevo" por separado)'
+);
+
+$filaReemplazoFisico = array_values(array_filter(
+    listarDesprendiblesDeEmpleado(EMPLEADO_ANDREA),
+    fn($d) => $d['periodo'] === PERIODO_REEMPLAZO_FISICO
+))[0];
+
+// ---------------------------------------------------------------------
+// 12. Los PDF de storage/ no son accesibles por URL directa: ni por la
+//     ruta cruda de htdocs (bloqueada por storage/.htaccess) ni listando
+//     el directorio, usando un nombre de archivo real y conocido.
+// ---------------------------------------------------------------------
+[$statusRutaCruda] = peticion('GET', BASE_HTDOCS_CRUDO . '/storage/desprendibles/' . EMPLEADO_ANDREA . '/' . PERIODO_REEMPLAZO_FISICO . '.pdf', [], $cookieAndrea);
+verificar(
+    in_array($statusRutaCruda, [403, 404], true),
+    'La ruta cruda de htdocs a un PDF real y conocido no es accesible (403/404, recibido ' . $statusRutaCruda . ')'
+);
+[$statusListado] = peticion('GET', BASE_HTDOCS_CRUDO . '/storage/desprendibles/' . EMPLEADO_ANDREA . '/', [], $cookieAndrea);
+verificar(
+    in_array($statusListado, [403, 404], true),
+    'Listar el directorio storage/desprendibles/' . EMPLEADO_ANDREA . '/ no es accesible (403/404, recibido ' . $statusListado . ')'
+);
+[$statusViaAlias] = peticion('GET', BASE . '/storage/desprendibles/' . EMPLEADO_ANDREA . '/' . PERIODO_REEMPLAZO_FISICO . '.pdf', [], $cookieAndrea);
+verificar(
+    in_array($statusViaAlias, [403, 404], true),
+    'La ruta a través del Alias /daservice tampoco expone el PDF (403/404, recibido ' . $statusViaAlias . ')'
+);
+
+// Limpieza de este bloque: borrar el registro y el archivo de prueba.
+$pdo = obtenerConexion();
+$pdo->prepare('DELETE FROM desprendible WHERE id = :id')->execute(['id' => $filaReemplazoFisico['id']]);
+@unlink($rutaFisicaReemplazo);
 
 // ---------------------------------------------------------------------
 // Limpieza: dejar a Andrea exactamente como al principio (2026-08 y
