@@ -16,6 +16,8 @@ require_once __DIR__ . '/../auth/roles.php';
 require_once __DIR__ . '/../auth/autenticacion.php';
 require_once __DIR__ . '/../tickets/crear_ticket.php';
 require_once __DIR__ . '/../tickets/tickets.php';
+require_once __DIR__ . '/../config/empresa.php';
+require_once __DIR__ . '/../certificados/certificados.php';
 require_once __DIR__ . '/../empleados/empleados.php';
 require_once __DIR__ . '/../clientes/clientes.php';
 require_once __DIR__ . '/../desprendibles/desprendibles.php';
