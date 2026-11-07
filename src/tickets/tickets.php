@@ -228,3 +228,28 @@ function asignarTicket(int $ticketId, int $tecnicoUsuarioId, int $coordinadorUsu
 
     return ['exito' => true, 'mensaje' => 'Ticket asignado correctamente.'];
 }
+
+// --- HU-08: límite de intentos para consultar_ticket.php (sin enumeración) ---
+const CONSULTA_TICKET_LIMITE_INTENTOS = 5;
+const CONSULTA_TICKET_VENTANA_SEGUNDOS = 600; // 10 minutos
+
+/**
+ * Límite de intentos fallidos por sesión (una sesión anónima ya existe
+ * para cualquier visitante, por cómo arranca la sesión en app.php), para
+ * dificultar probar números de ticket/correos al azar. Solo cuentan los
+ * intentos fallidos; una consulta exitosa no gasta cupo.
+ */
+function consultaTicketPermitida(): bool
+{
+    $ahora = time();
+    $_SESSION['intentos_consultar_ticket'] = array_values(array_filter(
+        $_SESSION['intentos_consultar_ticket'] ?? [],
+        fn($momento) => $momento > $ahora - CONSULTA_TICKET_VENTANA_SEGUNDOS
+    ));
+    return count($_SESSION['intentos_consultar_ticket']) < CONSULTA_TICKET_LIMITE_INTENTOS;
+}
+
+function registrarIntentoFallidoConsultaTicket(): void
+{
+    $_SESSION['intentos_consultar_ticket'][] = time();
+}

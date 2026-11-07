@@ -7,17 +7,31 @@
  * CLAUDE.md: "el cliente consulta con número de ticket y correo"). No
  * se muestra el detalle interno de los avances (comentarios internos,
  * nombre del técnico), solo el estado y las fechas.
+ *
+ * Sin enumeración: se devuelve exactamente el mismo mensaje tanto si el
+ * número de ticket no existe como si existe pero el correo no coincide
+ * (buscarTicketPorIdYCorreo valida ambos en una sola consulta), y hay
+ * un límite de intentos fallidos por sesión para dificultar probar
+ * combinaciones al azar.
  */
 require_once __DIR__ . '/../src/config/app.php';
 
 $ticket = null;
 $buscado = false;
+$limiteExcedido = false;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $buscado = true;
-    $ticketId = (int) ($_POST['numero_ticket'] ?? 0);
-    $correo = $_POST['correo'] ?? '';
-    $ticket = buscarTicketPorIdYCorreo($ticketId, $correo);
+    if (!consultaTicketPermitida()) {
+        $limiteExcedido = true;
+    } else {
+        $ticketId = (int) ($_POST['numero_ticket'] ?? 0);
+        $correo = $_POST['correo'] ?? '';
+        $ticket = buscarTicketPorIdYCorreo($ticketId, $correo);
+        if (!$ticket) {
+            registrarIntentoFallidoConsultaTicket();
+        }
+    }
 }
 ?>
 <!doctype html>
@@ -55,7 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 
     <?php if ($buscado): ?>
-      <?php if ($ticket): ?>
+      <?php if ($limiteExcedido): ?>
+        <div class="msg err" style="margin-top:1rem">
+          Hiciste demasiados intentos. Espera unos minutos antes de volver a consultar.
+        </div>
+      <?php elseif ($ticket): ?>
         <div class="msg ok" style="margin-top:1rem">
           <strong>#<?= (int) $ticket['id'] ?> — <?= htmlspecialchars($ticket['asunto']) ?></strong><br>
           Estado: <span class="pill p-<?= $ticket['estado'] ?>"><?= htmlspecialchars(ucfirst(str_replace('_', ' ', $ticket['estado']))) ?></span><br>
