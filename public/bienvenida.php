@@ -16,37 +16,43 @@ $usuario = usuarioActual();
 // escrito a mano (eso fue lo que causó el defecto de "técnico" en RNF-01).
 $modulosPorRol = [
     ROL_EMPLEADO      => [
-        ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', null],
+        ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
         ['Mis certificados',         'fa-file-signature',      'HU-03', null],
         ['Solicitar un permiso',     'fa-calendar-check',      'HU-04', null],
         ['Mis vacaciones',           'fa-umbrella-beach',      'HU-05', null],
     ],
     ROL_JEFE          => [
         ['Permisos de mi equipo',    'fa-user-check',          'HU-04', null],
+        ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
     ],
     ROL_CONTABILIDAD  => [
         ['Empleados',                'fa-id-card',              'HU-01', null],
-        ['Cargar desprendible',      'fa-file-upload',          'HU-02', null],
+        ['Cargar desprendible',      'fa-file-upload',          'HU-02', '/desprendibles.php'],
     ],
     ROL_TECNICO       => [
         ['Mis tickets asignados',    'fa-screwdriver-wrench',   'HU-08', null],
+        ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
     ],
     ROL_COORDINADOR   => [
         ['Todos los tickets',        'fa-headset',              'HU-06 · HU-07 · HU-08', null],
+        ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
     ],
     ROL_VENDEDOR      => [
         ['Clientes',                 'fa-building',             'HU-10', '/clientes.php'],
         ['Oportunidades',            'fa-handshake',            'HU-11 · HU-15', null],
         ['Proyectos',                'fa-diagram-project',      'HU-16', null],
+        ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
     ],
     ROL_GERENTE       => [
         ['Clientes',                 'fa-building',             'HU-10', '/clientes.php'],
         ['Indicadores comerciales',  'fa-chart-line',           'HU-13', null],
         ['Reportes',                 'fa-file-excel',           'HU-14', null],
+        ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
     ],
     ROL_ADMINISTRADOR => [
         ['Empleados y cuentas',      'fa-users-gear',           'HU-01 · RNF-02', null],
         ['Clientes',                 'fa-building',             'HU-10', '/clientes.php'],
+        ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
     ],
 ];
 $modulos = $modulosPorRol[(int) $usuario['rol_id']] ?? [];
