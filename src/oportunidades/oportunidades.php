@@ -107,3 +107,48 @@ function cambiarEtapaOportunidad(int $id, string $nuevaEtapa, string $motivoPerd
 
     return ['exito' => true, 'mensaje' => 'Etapa actualizada.'];
 }
+
+/**
+ * HU-15: registra el número y el enlace de la cotización de una
+ * oportunidad. Usa las columnas que ya existían en 'oportunidad'
+ * (cotizacion_numero VARCHAR(40), cotizacion_enlace VARCHAR(255)), sin
+ * tocar el esquema. El enlace solo se acepta con esquema http o https
+ * (rechaza javascript:, data:, enlaces sin esquema, etc.); mostrarlo
+ * escapado en pantalla es responsabilidad de la vista, no de aquí.
+ */
+function registrarCotizacion(int $oportunidadId, string $numero, string $enlace): array
+{
+    if (!obtenerOportunidad($oportunidadId)) {
+        return ['exito' => false, 'mensaje' => 'Oportunidad no encontrada.'];
+    }
+
+    $numero = trim($numero);
+    if ($numero === '') {
+        return ['exito' => false, 'mensaje' => 'El número de cotización es obligatorio.'];
+    }
+    if (mb_strlen($numero) > 40) {
+        return ['exito' => false, 'mensaje' => 'El número de cotización es demasiado largo (máximo 40 caracteres).'];
+    }
+    if (!preg_match('/^[A-Za-z0-9][A-Za-z0-9\-\/. ]*$/', $numero)) {
+        return ['exito' => false, 'mensaje' => 'El número de cotización tiene un formato no válido.'];
+    }
+
+    $enlace = trim($enlace);
+    if ($enlace === '') {
+        return ['exito' => false, 'mensaje' => 'El enlace de la cotización es obligatorio.'];
+    }
+    if (mb_strlen($enlace) > 255) {
+        return ['exito' => false, 'mensaje' => 'El enlace es demasiado largo (máximo 255 caracteres).'];
+    }
+    $esquema = strtolower((string) parse_url($enlace, PHP_URL_SCHEME));
+    if (!in_array($esquema, ['http', 'https'], true)) {
+        return ['exito' => false, 'mensaje' => 'El enlace debe empezar por http:// o https://.'];
+    }
+
+    $stmt = obtenerConexion()->prepare('
+        UPDATE oportunidad SET cotizacion_numero = :numero, cotizacion_enlace = :enlace WHERE id = :id
+    ');
+    $stmt->execute(['numero' => $numero, 'enlace' => $enlace, 'id' => $oportunidadId]);
+
+    return ['exito' => true, 'mensaje' => 'Cotización registrada.'];
+}

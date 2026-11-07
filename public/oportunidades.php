@@ -33,6 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_POST['motivo_perdida'] ?? ''
             );
             $mensaje = [$resultado['exito'] ? 'ok' : 'err', $resultado['mensaje']];
+        } elseif ($accion === 'cotizacion') {
+            $resultado = registrarCotizacion(
+                (int) ($_POST['id'] ?? 0),
+                $_POST['cotizacion_numero'] ?? '',
+                $_POST['cotizacion_enlace'] ?? ''
+            );
+            $mensaje = [$resultado['exito'] ? 'ok' : 'err', $resultado['mensaje']];
         }
     }
 }
@@ -86,6 +93,36 @@ require __DIR__ . '/../views/layout/cabecera.php';
       <button class="btn" type="submit">Actualizar etapa</button>
       <a class="btn sec" href="<?= URL_BASE ?>/oportunidades.php">Volver al listado</a>
     </div>
+  </form>
+
+  <h3>Cotización</h3>
+  <?php if ($oportunidadVer['cotizacion_numero']): ?>
+    <p>
+      N.º <?= htmlspecialchars($oportunidadVer['cotizacion_numero']) ?> —
+      <a href="<?= htmlspecialchars($oportunidadVer['cotizacion_enlace']) ?>" target="_blank" rel="noopener noreferrer">
+        Abrir cotización
+      </a>
+    </p>
+  <?php else: ?>
+    <p class="empty">Esta oportunidad todavía no tiene una cotización registrada.</p>
+  <?php endif; ?>
+  <form method="post" class="card" autocomplete="off">
+    <?= campoCSRF() ?>
+    <input type="hidden" name="accion" value="cotizacion">
+    <input type="hidden" name="id" value="<?= (int) $oportunidadVer['id'] ?>">
+    <div class="grid2">
+      <div class="field">
+        <label for="cotizacion_numero">Número de cotización</label>
+        <input type="text" id="cotizacion_numero" name="cotizacion_numero" maxlength="40"
+               placeholder="Ej: COT-2026-050" value="<?= htmlspecialchars($oportunidadVer['cotizacion_numero'] ?? '') ?>">
+      </div>
+      <div class="field">
+        <label for="cotizacion_enlace">Enlace (http:// o https://)</label>
+        <input type="text" id="cotizacion_enlace" name="cotizacion_enlace" maxlength="255"
+               placeholder="https://..." value="<?= htmlspecialchars($oportunidadVer['cotizacion_enlace'] ?? '') ?>">
+      </div>
+    </div>
+    <div class="row"><button class="btn sec" type="submit">Guardar cotización</button></div>
   </form>
 
 <?php else: ?>
