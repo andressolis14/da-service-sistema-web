@@ -31,12 +31,12 @@ $modulosPorRol = [
         ['Mis permisos',             'fa-calendar-check',       'HU-04', '/permisos.php'],
     ],
     ROL_TECNICO       => [
-        ['Mis tickets asignados',    'fa-screwdriver-wrench',   'HU-08', null],
+        ['Mis tickets asignados',    'fa-screwdriver-wrench',   'HU-07 · HU-08', '/tickets.php'],
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
         ['Mis permisos',             'fa-calendar-check',       'HU-04', '/permisos.php'],
     ],
     ROL_COORDINADOR   => [
-        ['Todos los tickets',        'fa-headset',              'HU-06 · HU-07 · HU-08', null],
+        ['Todos los tickets',        'fa-headset',              'HU-06 · HU-07 · HU-08', '/tickets.php'],
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
         ['Mis permisos',             'fa-calendar-check',       'HU-04', '/permisos.php'],
     ],
@@ -57,6 +57,7 @@ $modulosPorRol = [
     ROL_ADMINISTRADOR => [
         ['Empleados y cuentas',      'fa-users-gear',           'HU-01 · RNF-02', null],
         ['Clientes',                 'fa-building',             'HU-10', '/clientes.php'],
+        ['Todos los tickets',        'fa-headset',              'HU-06 · HU-07 · HU-08', '/tickets.php'],
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
         ['Mis permisos',             'fa-calendar-check',       'HU-04', '/permisos.php'],
     ],
