@@ -45,9 +45,9 @@ require __DIR__ . '/../views/layout/cabecera.php';
       <tbody>
         <tr>
           <td class="mono"><?= htmlspecialchars($miSaldo['fecha_ingreso']) ?></td>
-          <td class="num"><?= $miSaldo['dias_acumulados'] ?></td>
+          <td class="num"><?= formatearDias($miSaldo['dias_acumulados']) ?></td>
           <td class="num"><?= $miSaldo['dias_tomados'] ?></td>
-          <td class="num"><strong><?= $miSaldo['dias_disponibles'] ?></strong></td>
+          <td class="num"><strong><?= formatearDias($miSaldo['dias_disponibles']) ?></strong></td>
         </tr>
       </tbody>
     </table>
@@ -77,9 +77,9 @@ require __DIR__ . '/../views/layout/cabecera.php';
           <tr>
             <td><?= htmlspecialchars($saldoConsultado['nombre_completo']) ?></td>
             <td class="mono"><?= htmlspecialchars($saldoConsultado['fecha_ingreso']) ?></td>
-            <td class="num"><?= $saldoConsultado['dias_acumulados'] ?></td>
+            <td class="num"><?= formatearDias($saldoConsultado['dias_acumulados']) ?></td>
             <td class="num"><?= $saldoConsultado['dias_tomados'] ?></td>
-            <td class="num"><strong><?= $saldoConsultado['dias_disponibles'] ?></strong></td>
+            <td class="num"><strong><?= formatearDias($saldoConsultado['dias_disponibles']) ?></strong></td>
           </tr>
         </tbody>
       </table>
