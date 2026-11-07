@@ -16,6 +16,7 @@ require_once __DIR__ . '/../auth/roles.php';
 require_once __DIR__ . '/../auth/autenticacion.php';
 require_once __DIR__ . '/../tickets/crear_ticket.php';
 require_once __DIR__ . '/../empleados/empleados.php';
+require_once __DIR__ . '/../clientes/clientes.php';
 
 // URL base de la aplicación (ver Alias /daservice en httpd.conf -> /public).
 define('URL_BASE', '/daservice');
