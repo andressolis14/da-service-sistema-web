@@ -253,3 +253,56 @@ function registrarIntentoFallidoConsultaTicket(): void
 {
     $_SESSION['intentos_consultar_ticket'][] = time();
 }
+
+// --- HU-09: calificación del servicio (pública, sin cuenta) ---
+
+function obtenerCalificacion(int $ticketId): ?array
+{
+    $stmt = obtenerConexion()->prepare('SELECT * FROM calificacion WHERE ticket_id = :id');
+    $stmt->execute(['id' => $ticketId]);
+    $fila = $stmt->fetch();
+    return $fila ?: null;
+}
+
+/**
+ * Registra la calificación de un ticket cerrado. El acceso usa el mismo
+ * número de ticket + correo que consultar_ticket.php (buscarTicketPorIdYCorreo,
+ * una sola consulta que valida ambos a la vez): cuando no coinciden, se
+ * devuelve 'generico' => true con el MISMO mensaje que consultar_ticket.php,
+ * para no revelar si el ticket existe o si el correo era el que no
+ * coincidía (sin enumeración, igual que HU-08). El límite de intentos
+ * fallidos (consultaTicketPermitida) también es compartido con
+ * consultar_ticket.php: ambas pantallas públicas gastan el mismo cupo.
+ */
+function registrarCalificacion(int $ticketId, string $correo, int $puntaje, string $comentario): array
+{
+    $ticket = buscarTicketPorIdYCorreo($ticketId, $correo);
+    if (!$ticket) {
+        return ['exito' => false, 'generico' => true, 'mensaje' => 'No se encontró ninguna solicitud con ese número y ese correo.'];
+    }
+    if ($ticket['estado'] !== 'cerrado') {
+        return ['exito' => false, 'generico' => false, 'mensaje' => 'Solo se puede calificar un ticket cerrado.'];
+    }
+    if (obtenerCalificacion($ticketId)) {
+        return ['exito' => false, 'generico' => false, 'mensaje' => 'Este ticket ya fue calificado.'];
+    }
+    if ($puntaje < 1 || $puntaje > 5) {
+        return ['exito' => false, 'generico' => false, 'mensaje' => 'La calificación debe estar entre 1 y 5.'];
+    }
+    $comentario = trim($comentario);
+    if (mb_strlen($comentario) > 255) {
+        return ['exito' => false, 'generico' => false, 'mensaje' => 'El comentario es demasiado largo (máximo 255 caracteres).'];
+    }
+
+    $stmt = obtenerConexion()->prepare('
+        INSERT INTO calificacion (ticket_id, puntaje, comentario)
+        VALUES (:ticket, :puntaje, :comentario)
+    ');
+    $stmt->execute([
+        'ticket'     => $ticketId,
+        'puntaje'    => $puntaje,
+        'comentario' => $comentario !== '' ? $comentario : null,
+    ]);
+
+    return ['exito' => true, 'mensaje' => '¡Gracias por tu calificación!'];
+}

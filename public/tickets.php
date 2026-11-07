@@ -63,6 +63,7 @@ $ticketVerId = isset($_GET['ver']) ? (int) $_GET['ver'] : null;
 $ticketVer = null;
 $avances = [];
 $fechaCierre = null;
+$calificacion = null;
 $puedeRegistrarAvance = false;
 
 if ($ticketVerId) {
@@ -76,6 +77,7 @@ if ($ticketVerId) {
         }
         $avances = listarAvancesDeTicket($ticketVerId);
         $fechaCierre = obtenerFechaCierre($ticketVerId);
+        $calificacion = obtenerCalificacion($ticketVerId);
         $puedeRegistrarAvance = ($esGestionSoporte || $esTecnicoAsignado) && $ticketVer['estado'] !== 'cerrado';
     }
 }
@@ -122,6 +124,15 @@ require __DIR__ . '/../views/layout/cabecera.php';
       </tbody>
     </table>
   </div>
+
+  <?php if ($calificacion): ?>
+    <h3>Calificación del cliente</h3>
+    <p>
+      <?= str_repeat('★', (int) $calificacion['puntaje']) . str_repeat('☆', 5 - (int) $calificacion['puntaje']) ?>
+      (<?= (int) $calificacion['puntaje'] ?>/5)
+      <?php if ($calificacion['comentario']): ?><br>“<?= htmlspecialchars($calificacion['comentario']) ?>”<?php endif; ?>
+    </p>
+  <?php endif; ?>
 
   <?php if ($puedeRegistrarAvance): ?>
     <h3>Registrar avance</h3>
