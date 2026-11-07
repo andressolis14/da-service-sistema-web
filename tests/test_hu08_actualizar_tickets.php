@@ -259,6 +259,65 @@ verificar(
 @unlink($cookieCliente);
 
 // ---------------------------------------------------------------------
+// 8. Sin enumeración: mismo mensaje exacto para un ticket que no existe
+//    y para uno que existe pero con el correo equivocado.
+// ---------------------------------------------------------------------
+function extraerMensajeError(string $html): ?string
+{
+    preg_match('/<div class="msg err"[^>]*>(.*?)<\/div>/s', $html, $m);
+    return isset($m[1]) ? trim($m[1]) : null;
+}
+
+$cookieEnumeracion = tempnam(sys_get_temp_dir(), 'daservice_cookies_');
+[, $htmlTicketInexistente] = peticion('POST', BASE . '/consultar_ticket.php', [
+    'numero_ticket' => 999999,
+    'correo'        => 'cualquiera@no-existe.example',
+], $cookieEnumeracion);
+$mensajeTicketInexistente = extraerMensajeError($htmlTicketInexistente);
+
+[, $htmlCorreoEquivocado2] = peticion('POST', BASE . '/consultar_ticket.php', [
+    'numero_ticket' => TICKET_UNO, // sí existe
+    'correo'        => 'tampoco-coincide@no-existe.example',
+], $cookieEnumeracion);
+$mensajeCorreoEquivocado = extraerMensajeError($htmlCorreoEquivocado2);
+
+verificar($mensajeTicketInexistente !== null, 'El ticket inexistente devuelve un mensaje de error');
+verificar(
+    $mensajeTicketInexistente === $mensajeCorreoEquivocado,
+    'El mensaje es exactamente el mismo para un ticket inexistente y para uno con el correo equivocado (sin enumeración)'
+);
+
+// ---------------------------------------------------------------------
+// 9. Límite de intentos fallidos por sesión (5 en 10 minutos).
+// ---------------------------------------------------------------------
+$cookieLimite = tempnam(sys_get_temp_dir(), 'daservice_cookies_');
+for ($i = 1; $i <= 5; $i++) {
+    [, $htmlIntento] = peticion('POST', BASE . '/consultar_ticket.php', [
+        'numero_ticket' => 999999,
+        'correo'        => 'intento' . $i . '@no-existe.example',
+    ], $cookieLimite);
+    verificar(
+        str_contains($htmlIntento, 'No se encontró ninguna solicitud'),
+        "Intento fallido $i de 5 todavía se procesa normalmente"
+    );
+}
+
+// El 6.º intento, aunque los datos sean correctos, queda bloqueado.
+$ticketUnoActual = obtenerTicket(TICKET_UNO);
+[, $htmlSextoIntento] = peticion('POST', BASE . '/consultar_ticket.php', [
+    'numero_ticket' => TICKET_UNO,
+    'correo'        => $ticketUnoActual['solicitante_correo'],
+], $cookieLimite);
+verificar(
+    str_contains($htmlSextoIntento, 'demasiados intentos') || str_contains($htmlSextoIntento, 'Hiciste demasiados intentos'),
+    'El 6.º intento en la misma sesión queda bloqueado, aunque esta vez los datos sean correctos'
+);
+verificar(!str_contains($htmlSextoIntento, 'class="msg ok"'), 'El bloqueo no muestra el detalle del ticket aunque los datos fueran correctos');
+
+@unlink($cookieEnumeracion);
+@unlink($cookieLimite);
+
+// ---------------------------------------------------------------------
 // Limpieza: borrar los avances y asignaciones de prueba, y devolver
 // ambos tickets a 'pendiente'.
 // ---------------------------------------------------------------------
