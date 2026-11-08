@@ -18,16 +18,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = (int) ($_POST['id'] ?? 0);
         $resultado = cambiarEstadoCliente($id, $_POST['nuevo_estado'] ?? '', $_POST['motivo'] ?? '', (int) $usuario['id']);
         $mensaje = [$resultado['exito'] ? 'ok' : 'err', $resultado['mensaje']];
+    } elseif (($_POST['accion'] ?? '') === 'interaccion') {
+        $resultado = registrarInteraccion(
+            (int) ($_POST['id'] ?? 0),
+            (int) $usuario['id'],
+            $_POST['fecha'] ?? '',
+            $_POST['tipo'] ?? '',
+            $_POST['descripcion'] ?? ''
+        );
+        $mensaje = [$resultado['exito'] ? 'ok' : 'err', $resultado['mensaje']];
     }
 }
 
 $clienteVerId = isset($_GET['ver']) ? (int) $_GET['ver'] : null;
 $clienteVer = $clienteVerId ? obtenerCliente($clienteVerId) : null;
 $historial = $clienteVer ? listarHistorialCliente($clienteVerId) : [];
+$interacciones = $clienteVer ? listarInteraccionesDeCliente($clienteVerId) : [];
 $clientes = listarClientes();
 
 $tituloPagina = 'Clientes';
-$menu = [['/clientes.php', 'Clientes', 'HU-10']];
+$menu = [['/clientes.php', 'Clientes', 'HU-10 · HU-12']];
 $vistaActual = '/clientes.php';
 require __DIR__ . '/../views/layout/cabecera.php';
 ?>
@@ -92,6 +102,53 @@ require __DIR__ . '/../views/layout/cabecera.php';
           <?php endforeach; ?>
           <?php if (!$historial): ?>
             <tr><td colspan="5" class="empty">Sin cambios de estado todavía.</td></tr>
+          <?php endif; ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div>
+    <h3>Interacciones</h3>
+    <form method="post" class="card" autocomplete="off">
+      <?= campoCSRF() ?>
+      <input type="hidden" name="accion" value="interaccion">
+      <input type="hidden" name="id" value="<?= (int) $clienteVer['id'] ?>">
+      <div class="grid2">
+        <div class="field">
+          <label for="fecha">Fecha y hora</label>
+          <input type="datetime-local" id="fecha" name="fecha" required max="<?= date('Y-m-d\TH:i') ?>">
+        </div>
+        <div class="field">
+          <label for="tipo">Tipo</label>
+          <select id="tipo" name="tipo" required>
+            <?php foreach (INTERACCION_TIPOS as $t): ?>
+              <option value="<?= $t ?>"><?= ucfirst($t) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="descripcion">¿Qué se habló o se acordó?</label>
+        <textarea id="descripcion" name="descripcion" required></textarea>
+      </div>
+      <div class="row"><button class="btn sec" type="submit">Registrar interacción</button></div>
+    </form>
+
+    <div class="tw" style="margin-top:14px">
+      <table>
+        <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Registrada por</th></tr></thead>
+        <tbody>
+          <?php foreach ($interacciones as $i): ?>
+            <tr>
+              <td class="mono"><?= htmlspecialchars($i['fecha']) ?></td>
+              <td><?= htmlspecialchars(ucfirst($i['tipo'])) ?></td>
+              <td><?= nl2br(htmlspecialchars($i['descripcion'])) ?></td>
+              <td><?= htmlspecialchars($i['vendedor_nombre']) ?></td>
+            </tr>
+          <?php endforeach; ?>
+          <?php if (!$interacciones): ?>
+            <tr><td colspan="4" class="empty">Sin interacciones registradas todavía.</td></tr>
           <?php endif; ?>
         </tbody>
       </table>
