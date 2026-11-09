@@ -23,6 +23,7 @@ require_once __DIR__ . '/../oportunidades/oportunidades.php';
 require_once __DIR__ . '/../interacciones/interacciones.php';
 require_once __DIR__ . '/../desempeno/desempeno.php';
 require_once __DIR__ . '/../proyectos/proyectos.php';
+require_once __DIR__ . '/../reportes/reportes.php';
 require_once __DIR__ . '/../empleados/empleados.php';
 require_once __DIR__ . '/../clientes/clientes.php';
 require_once __DIR__ . '/../desprendibles/desprendibles.php';
