@@ -51,6 +51,7 @@ $modulosPorRol = [
     ROL_VENDEDOR      => [
         ['Clientes',                 'fa-building',             'HU-10', '/clientes.php'],
         ['Oportunidades',            'fa-handshake',            'HU-11 · HU-15', '/oportunidades.php'],
+        ['Mi desempeño',             'fa-chart-line',           'HU-13', '/desempeno.php'],
         ['Proyectos',                'fa-diagram-project',      'HU-16', null],
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
         ['Mis certificados',         'fa-file-signature',      'HU-03', '/certificados.php'],
@@ -60,7 +61,7 @@ $modulosPorRol = [
     ROL_GERENTE       => [
         ['Clientes',                 'fa-building',             'HU-10', '/clientes.php'],
         ['Oportunidades',            'fa-handshake',            'HU-11 · HU-15', '/oportunidades.php'],
-        ['Indicadores comerciales',  'fa-chart-line',           'HU-13', null],
+        ['Desempeño comercial',      'fa-chart-line',           'HU-13', '/desempeno.php'],
         ['Reportes',                 'fa-file-excel',           'HU-14', null],
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
         ['Mis certificados',         'fa-file-signature',      'HU-03', '/certificados.php'],
@@ -71,6 +72,7 @@ $modulosPorRol = [
         ['Empleados y cuentas',      'fa-users-gear',           'HU-01 · RNF-02', null],
         ['Clientes',                 'fa-building',             'HU-10', '/clientes.php'],
         ['Oportunidades',            'fa-handshake',            'HU-11 · HU-15', '/oportunidades.php'],
+        ['Desempeño comercial',      'fa-chart-line',           'HU-13', '/desempeno.php'],
         ['Todos los tickets',        'fa-headset',              'HU-06 · HU-07 · HU-08', '/tickets.php'],
         ['Mis desprendibles',        'fa-file-invoice-dollar', 'HU-02', '/desprendibles.php'],
         ['Certificados laborales',   'fa-file-signature',       'HU-03', '/certificados.php'],
