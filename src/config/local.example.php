@@ -15,3 +15,7 @@ define('DB_PASS', 'CAMBIAR_POR_LA_CLAVE_REAL');
 // para borrar). La aplicación nunca usa estas credenciales.
 define('DB_ADMIN_USER', 'da_admin');
 define('DB_ADMIN_PASS', 'CAMBIAR_POR_LA_CLAVE_REAL');
+
+// Perfil de solo lectura (GRANT SELECT) que usa el módulo de reportes (HU-14).
+define('DB_REPORTES_USER', 'da_reportes');
+define('DB_REPORTES_PASS', 'CAMBIAR_POR_LA_CLAVE_REAL');
