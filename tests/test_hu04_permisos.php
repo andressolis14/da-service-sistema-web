@@ -14,6 +14,10 @@
  *  - Una solicitud ya resuelta no se puede volver a resolver.
  *  - Un empleado no ve las solicitudes de otro en su propia lista.
  *  - POST sin csrf_token se rechaza.
+ *  - Advertencia de fechas cruzadas (Tabla 41): sin cruce no hay aviso;
+ *    con cruce parcial, total o de un solo día sí lo hay; un permiso
+ *    rechazado no cuenta para el cruce. El sistema advierte pero no
+ *    bloquea el envío (el jefe decide al revisar).
  *
  * Usa el empleado de datos de prueba id=10 (Laura Gómez, usuario lgomez),
  * cuyo jefe directo real es el empleado id=4 (Marta Lucía Díaz, usuario
@@ -74,6 +78,17 @@ function tokenPermisos(string $cookieJar): string
 {
     [, $html] = peticion('GET', BASE . '/permisos.php', [], $cookieJar);
     return extraerToken($html);
+}
+
+/** fecha_solicitud es DATETIME con resolución de segundos: ante inserciones
+ *  rápidas y seguidas, varias filas pueden empatar ahí, así que para
+ *  identificar "la última creada" se usa el id (autoincremental), no el
+ *  orden de listarPermisosDeEmpleado(). */
+function ultimoIdPermisoDe(int $empleadoId): int
+{
+    $stmt = obtenerConexion()->prepare('SELECT MAX(id) FROM permiso WHERE empleado_id = :emp');
+    $stmt->execute(['emp' => $empleadoId]);
+    return (int) $stmt->fetchColumn();
 }
 
 function verificar(bool $condicion, string $descripcion): void
@@ -215,13 +230,121 @@ verificar(
 verificar(obtenerPermiso($idPermisoPrueba)['estado'] === 'aprobado', 'El estado sigue en aprobado (no cambió a rechazado)');
 
 // ---------------------------------------------------------------------
-// Limpieza: borrar el permiso de prueba. da_app no tiene DELETE sobre
+// 9. Advertencia de fechas cruzadas (Tabla 41): no bloquea, solo avisa.
+//    Se usa un rango de fechas aparte (feb-mar 2027) para no interferir
+//    con la solicitud ya aprobada de las secciones anteriores.
+// ---------------------------------------------------------------------
+$idsCruce = [];
+
+// 9a. Primera solicitud en este rango: no hay nada con qué cruzarse.
+$token = tokenPermisos($cookieLaura);
+[, $htmlBase] = peticion('POST', BASE . '/permisos.php', [
+    'csrf_token'   => $token,
+    'accion'       => 'solicitar',
+    'fecha_inicio' => '2027-02-10',
+    'fecha_fin'    => '2027-02-20',
+    'motivo'       => 'Base cruce (prueba HU-04)',
+], $cookieLaura);
+verificar(!str_contains($htmlBase, 'Advertencia'), 'Sin nada previo en el rango: la solicitud no trae advertencia');
+$idBase = ultimoIdPermisoDe(EMPLEADO_LAURA);
+$idsCruce[] = $idBase;
+
+// 9b. Sin cruce: fechas totalmente aparte de la solicitud base (10-20 feb).
+$token = tokenPermisos($cookieLaura);
+[, $htmlSinCruce] = peticion('POST', BASE . '/permisos.php', [
+    'csrf_token'   => $token,
+    'accion'       => 'solicitar',
+    'fecha_inicio' => '2027-03-01',
+    'fecha_fin'    => '2027-03-05',
+    'motivo'       => 'Sin cruce (prueba HU-04)',
+], $cookieLaura);
+verificar(!str_contains($htmlSinCruce, 'Advertencia'), 'Fechas totalmente aparte de la base: no hay advertencia');
+$idsCruce[] = ultimoIdPermisoDe(EMPLEADO_LAURA);
+
+// 9c. Cruce parcial: se solapa solo con la cola de la base (18-25 feb vs 10-20 feb).
+$token = tokenPermisos($cookieLaura);
+[, $htmlParcial] = peticion('POST', BASE . '/permisos.php', [
+    'csrf_token'   => $token,
+    'accion'       => 'solicitar',
+    'fecha_inicio' => '2027-02-18',
+    'fecha_fin'    => '2027-02-25',
+    'motivo'       => 'Cruce parcial (prueba HU-04)',
+], $cookieLaura);
+verificar(str_contains($htmlParcial, 'Advertencia: estas fechas se cruzan'), 'Cruce parcial con la base: sí hay advertencia');
+$idsCruce[] = ultimoIdPermisoDe(EMPLEADO_LAURA);
+
+// 9d. Cruce total: queda completamente dentro de la base (12-14 feb vs 10-20 feb).
+$token = tokenPermisos($cookieLaura);
+[, $htmlTotal] = peticion('POST', BASE . '/permisos.php', [
+    'csrf_token'   => $token,
+    'accion'       => 'solicitar',
+    'fecha_inicio' => '2027-02-12',
+    'fecha_fin'    => '2027-02-14',
+    'motivo'       => 'Cruce total (prueba HU-04)',
+], $cookieLaura);
+verificar(str_contains($htmlTotal, 'Advertencia: estas fechas se cruzan'), 'Cruce total (contenida en la base): sí hay advertencia');
+$idCruceTotal = ultimoIdPermisoDe(EMPLEADO_LAURA);
+$idsCruce[] = $idCruceTotal;
+
+// 9e. Cruce de un solo día: toca únicamente el último día de la base (20 feb).
+$token = tokenPermisos($cookieLaura);
+[, $htmlUnDia] = peticion('POST', BASE . '/permisos.php', [
+    'csrf_token'   => $token,
+    'accion'       => 'solicitar',
+    'fecha_inicio' => '2027-02-20',
+    'fecha_fin'    => '2027-02-20',
+    'motivo'       => 'Cruce de un dia (prueba HU-04)',
+], $cookieLaura);
+verificar(str_contains($htmlUnDia, 'Advertencia: estas fechas se cruzan'), 'Cruce de un solo día: sí hay advertencia');
+$idsCruce[] = ultimoIdPermisoDe(EMPLEADO_LAURA);
+
+// 9f. Un permiso RECHAZADO no cuenta para el cruce: se rechazan la base
+//     y el cruce total (las dos que tocan 12-14 feb) y se repite esa
+//     misma solicitud; ya no debe traer advertencia.
+$token = tokenPermisos($cookieMarta);
+peticion('POST', BASE . '/permisos.php', [
+    'csrf_token' => $token,
+    'accion'     => 'resolver',
+    'id'         => $idBase,
+    'decision'   => 'rechazado',
+], $cookieMarta);
+$token = tokenPermisos($cookieMarta);
+peticion('POST', BASE . '/permisos.php', [
+    'csrf_token' => $token,
+    'accion'     => 'resolver',
+    'id'         => $idCruceTotal,
+    'decision'   => 'rechazado',
+], $cookieMarta);
+verificar(
+    obtenerPermiso($idBase)['estado'] === 'rechazado' && obtenerPermiso($idCruceTotal)['estado'] === 'rechazado',
+    'La base y el cruce total quedan rechazados'
+);
+
+$token = tokenPermisos($cookieLaura);
+[, $htmlTrasRechazo] = peticion('POST', BASE . '/permisos.php', [
+    'csrf_token'   => $token,
+    'accion'       => 'solicitar',
+    'fecha_inicio' => '2027-02-12',
+    'fecha_fin'    => '2027-02-14',
+    'motivo'       => 'Tras rechazo, mismas fechas (prueba HU-04)',
+], $cookieLaura);
+verificar(!str_contains($htmlTrasRechazo, 'Advertencia'), 'Con lo que se cruzaba ya rechazado, las mismas fechas no generan advertencia');
+$idsCruce[] = ultimoIdPermisoDe(EMPLEADO_LAURA);
+
+// ---------------------------------------------------------------------
+// Limpieza: borrar los permisos de prueba. da_app no tiene DELETE sobre
 // 'permiso' (solo sobre 'desprendible'), así que se usa da_admin (sus
 // credenciales viven solo en config/local.php, nunca en este archivo).
 // ---------------------------------------------------------------------
 $pdoAdmin = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4', DB_ADMIN_USER, DB_ADMIN_PASS);
 $pdoAdmin->prepare('DELETE FROM permiso WHERE id = :id')->execute(['id' => $idPermisoPrueba]);
 verificar(obtenerPermiso($idPermisoPrueba) === null, 'El permiso de prueba se eliminó en la limpieza final');
+
+foreach ($idsCruce as $idCruce) {
+    $pdoAdmin->prepare('DELETE FROM permiso WHERE id = :id')->execute(['id' => $idCruce]);
+    verificar(obtenerPermiso($idCruce) === null, "El permiso de prueba de cruce #$idCruce se eliminó en la limpieza final");
+}
+
 verificar(count(listarPermisosDeEmpleado(EMPLEADO_LAURA)) === $totalInicial, 'Laura queda con el mismo número de solicitudes que al inicio');
 
 @unlink($cookieLaura);
