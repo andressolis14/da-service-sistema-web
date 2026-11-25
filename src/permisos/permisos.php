@@ -18,6 +18,10 @@
  *   motivo original de la solicitud; se deja así (ver resumen para el
  *   equipo de documentación) en vez de modificar la base de datos sin
  *   acordarlo primero.
+ * - Advertencia de fechas cruzadas (Tabla 41): si las fechas de una nueva
+ *   solicitud se solapan con otra del mismo empleado en estado 'pendiente'
+ *   o 'aprobado', el sistema lo advierte pero NO bloquea el envío; el jefe
+ *   decide al revisarla. Una solicitud 'rechazada' no cuenta para el cruce.
  */
 
 function listarPermisosDeEmpleado(int $empleadoId): array
@@ -55,6 +59,22 @@ function obtenerPermiso(int $id): ?array
     return $fila ?: null;
 }
 
+/** Hay cruce si otra solicitud del mismo empleado, pendiente o aprobada, toca alguno de estos días. */
+function tieneFechasCruzadas(int $empleadoId, string $fechaInicio, string $fechaFin): bool
+{
+    $stmt = obtenerConexion()->prepare("
+        SELECT 1
+        FROM permiso
+        WHERE empleado_id = :emp
+          AND estado IN ('pendiente', 'aprobado')
+          AND fecha_inicio <= :fin
+          AND fecha_fin >= :inicio
+        LIMIT 1
+    ");
+    $stmt->execute(['emp' => $empleadoId, 'fin' => $fechaFin, 'inicio' => $fechaInicio]);
+    return (bool) $stmt->fetchColumn();
+}
+
 function solicitarPermiso(int $empleadoId, string $fechaInicio, string $fechaFin, string $motivo): array
 {
     $inicio = DateTime::createFromFormat('Y-m-d', $fechaInicio);
@@ -70,6 +90,8 @@ function solicitarPermiso(int $empleadoId, string $fechaInicio, string $fechaFin
         return ['exito' => false, 'mensaje' => 'El motivo es obligatorio.'];
     }
 
+    $cruzada = tieneFechasCruzadas($empleadoId, $fechaInicio, $fechaFin);
+
     $stmt = obtenerConexion()->prepare('
         INSERT INTO permiso (empleado_id, fecha_inicio, fecha_fin, motivo)
         VALUES (:emp, :inicio, :fin, :motivo)
@@ -80,7 +102,12 @@ function solicitarPermiso(int $empleadoId, string $fechaInicio, string $fechaFin
         'fin'    => $fechaFin,
         'motivo' => $motivo,
     ]);
-    return ['exito' => true, 'mensaje' => 'Solicitud enviada. Queda pendiente de aprobación de tu jefe directo.'];
+
+    $mensaje = 'Solicitud enviada. Queda pendiente de aprobación de tu jefe directo.';
+    if ($cruzada) {
+        $mensaje .= ' Advertencia: estas fechas se cruzan con otra solicitud tuya pendiente o aprobada; tu jefe lo verá al decidir.';
+    }
+    return ['exito' => true, 'mensaje' => $mensaje, 'advertencia' => $cruzada];
 }
 
 /**
